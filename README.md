@@ -14,7 +14,7 @@ The data for this project is sourced from the Kaggle dataset:
 Dataset Link: Movies Dataset
 Schema
 DROP TABLE IF EXISTS netflix;
-CREATE TABLE netflix
+CREATE TABLE netflix_db
 (
     show_id      VARCHAR(5),
     type         VARCHAR(10),
@@ -36,7 +36,7 @@ CREATE TABLE netflix
 SELECT 
     type,
     COUNT(*)
-FROM netflix
+FROM netflix_db
 GROUP BY 1;
 
 Objective: Determine the distribution of content types on Netflix.
@@ -47,7 +47,7 @@ WITH RatingCounts AS (
         type,
         rating,
         COUNT(*) AS rating_count
-    FROM netflix
+    FROM netflix_db
     GROUP BY type, rating
 ),
 RankedRatings AS (
@@ -68,7 +68,7 @@ Objective: Identify the most frequently occurring rating for each type of conten
 
 # 3. List All Movies Released in a Specific Year (e.g., 2020)
 SELECT * 
-FROM netflix
+FROM netflix_db
 WHERE release_year = 2020;
 
 Objective: Retrieve all movies released in a specific year.
@@ -80,7 +80,7 @@ FROM
     SELECT 
         UNNEST(STRING_TO_ARRAY(country, ',')) AS country,
         COUNT(*) AS total_content
-    FROM netflix
+    FROM netflix_db
     GROUP BY 1
 ) AS t1
 WHERE country IS NOT NULL
@@ -92,7 +92,7 @@ Objective: Identify the top 5 countries with the highest number of content items
 # 5. Identify the Longest Movie
 SELECT 
     *
-FROM netflix
+FROM netflix_db
 WHERE type = 'Movie'
 ORDER BY SPLIT_PART(duration, ' ', 1)::INT DESC;
 
@@ -100,7 +100,7 @@ Objective: Find the movie with the longest duration.
 
 # 6. Find Content Added in the Last 5 Years
 SELECT *
-FROM netflix
+FROM netflix_db
 WHERE TO_DATE(date_added, 'Month DD, YYYY') >= CURRENT_DATE - INTERVAL '5 years';
 
 Objective: Retrieve content added to Netflix in the last 5 years.
@@ -111,7 +111,7 @@ FROM (
     SELECT 
         *,
         UNNEST(STRING_TO_ARRAY(director, ',')) AS director_name
-    FROM netflix
+    FROM netflix_db
 ) AS t
 WHERE director_name = 'Rajiv Chilaka';
 
@@ -119,7 +119,7 @@ Objective: List all content directed by 'Rajiv Chilaka'.
 
 # 8. List All TV Shows with More Than 5 Seasons
 SELECT *
-FROM netflix
+FROM netflix_db
 WHERE type = 'TV Show'
   AND SPLIT_PART(duration, ' ', 1)::INT > 5;
 
@@ -129,7 +129,7 @@ Objective: Identify TV shows with more than 5 seasons.
 SELECT 
     UNNEST(STRING_TO_ARRAY(listed_in, ',')) AS genre,
     COUNT(*) AS total_content
-FROM netflix
+FROM netflix_db
 GROUP BY 1;
 
 Objective: Count the number of content items in each genre.
@@ -145,7 +145,7 @@ SELECT
         COUNT(show_id)::numeric /
         (SELECT COUNT(show_id) FROM netflix WHERE country = 'India')::numeric * 100, 2
     ) AS avg_release
-FROM netflix
+FROM netflix_db
 WHERE country = 'India'
 GROUP BY country, release_year
 ORDER BY avg_release DESC
@@ -155,21 +155,21 @@ Objective: Calculate and rank years by the average number of content releases by
 
 # 11. List All Movies that are Documentaries
 SELECT * 
-FROM netflix
+FROM netflix_db
 WHERE listed_in LIKE '%Documentaries';
 
 Objective: Retrieve all movies classified as documentaries.
 
 # 12. Find All Content Without a Director
 SELECT * 
-FROM netflix
+FROM netflix_db
 WHERE director IS NULL;
 
 Objective: List content that does not have a director.
 
 # 13. Find How Many Movies Actor 'Salman Khan' Appeared in the Last 10 Years
 SELECT * 
-FROM netflix
+FROM netflix_db
 WHERE casts LIKE '%Salman Khan%'
   AND release_year > EXTRACT(YEAR FROM CURRENT_DATE) - 10;
 
@@ -179,7 +179,7 @@ Objective: Count the number of movies featuring 'Salman Khan' in the last 10 yea
 SELECT 
     UNNEST(STRING_TO_ARRAY(casts, ',')) AS actor,
     COUNT(*)
-FROM netflix
+FROM netflix_db
 WHERE country = 'India'
 GROUP BY actor
 ORDER BY COUNT(*) DESC
@@ -197,7 +197,7 @@ FROM (
             WHEN description ILIKE '%kill%' OR description ILIKE '%violence%' THEN 'Bad'
             ELSE 'Good'
         END AS category
-    FROM netflix
+    FROM netflix_db
 ) AS categorized_content
 GROUP BY category;
 
